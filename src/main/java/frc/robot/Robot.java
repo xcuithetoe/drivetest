@@ -30,6 +30,7 @@ public class Robot extends TimedRobot {
   private Joystick m_joystick = new Joystick(0);
 
   int wpk = 0 ;
+  private int m_driveMode = 0;
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -93,16 +94,62 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopInit() {}
 
+  private void tankDrive() {
+    double leftY = m_joystick.getRawAxis(1);
+    double rightY = m_joystick.getRawAxis(5);
+
+    m_left1.set(leftY);
+    m_left2.set(leftY);
+    m_right1.set(rightY);
+    m_right2.set(rightY);
+  }
+
+  private void arcadeDrive(){
+    double angle = m_joystick.getRawAxis(0) * 0.5;
+    double force = m_joystick.getRawAxis(1);
+
+    double leftY = force + angle;
+    double rightY = force - angle;
+
+    m_left1.set(-leftY);
+    m_left2.set(-leftY);
+    m_right1.set(-rightY);
+    m_right2.set(-rightY);
+  }
+
+  private void cheesyDrive() {
+    double angle = m_joystick.getRawAxis(0) * -0.5;
+    double force = m_joystick.getRawAxis(3);
+
+    double leftY =  force + angle;
+    double rightY = force - angle;
+
+    m_left1.set(-leftY);
+    m_left2.set(-leftY);
+    m_right1.set(-rightY);
+    m_right2.set(-rightY);
+  }
+
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
       wpk++;
-      double Y = m_joystick.getY();
-      m_left1.set(Y);
-      m_left2.set(Y);
-      m_right1.set(Y);
-      m_right2.set(Y);
-      System.out.println("Y = " + Y);
+      
+      if (m_joystick.getRawButton(5)) {
+        m_driveMode ++;
+      }
+
+      if (m_driveMode > 3) {
+        m_driveMode = 0;
+      }
+
+      if (m_driveMode == 0) {
+        tankDrive();
+      } else if (m_driveMode == 1) {
+        arcadeDrive();
+      } else {
+        cheesyDrive();
+      }
   }
 
   /** This function is called once when the robot is disabled. */
